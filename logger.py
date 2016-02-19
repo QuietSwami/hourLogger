@@ -7,6 +7,15 @@ import tabulate
 import optparse
 
 
+def start(subject):
+	os.chdir(os.path.expanduser('~'))
+	file = open("save.txt", "w")
+	for i in file.readlines():
+		i = i.split(" ")
+		if subject in i:
+			
+
+
 def listing():
 	filename = "save.txt"
 	base = os.path.expanduser('~')
@@ -20,9 +29,8 @@ def listing():
 		os.chdir(base)
 		file = open(filename, 'r')
 		lines = file.readlines()
-		listing = [[x] for x in lines]
+		listing = [[x.strip().split(" ")] for x in lines]
 		print tabulate.tabulate(listing)
-		
 	
 
 if __name__ == '__main__':
