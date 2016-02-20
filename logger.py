@@ -8,53 +8,46 @@ import tabulate
 import optparse
 
 
-def start(subject):
-	empty = datetime.time(0,0,0)
-	os.chdir(os.path.expanduser('~'))
-	if not os.path.isfile("save.txt"): #create a new file if it doesn't exist
-		print "Saving file did not exist... Created one. You can now start logging those hours!"
+def file_to_dic():
+	dic = {}
+	os.chdir(os.path.expanduser("~"))
+	if not os.path.isfile("save.txt"):
+		print "Saving file not created. Created a new one! You can now start logging those hours!"
 		file = open("save.txt", "w")
-		file.write(subject + " " + empty.strftime("%H:%M:%S") + "\n") #create a new subject
-		file.write("started " + subject + "@" + time.strftime("%H:%M:%S") +"\n") # start the log
 		file.close()
 	else:
 		file = open("save.txt", "r")
-		lista = file.readlines()
-		file.close() 
-		file = open("save.txt", "w")
-		lista = [x.strip().split(" ") for x in lista]
-		occ = False #occ checks if the subject already exists
-		for i in lista:
-			print i
-			if subject in i: #if the subject exists
-				num_of_oc = True
-			elif "started" in  i:
-				if not occ:
-					file.write(subject + " " + empty.strftime("%H:%M:%S") + "\n") #if the subject doesn't exist creates it
-				file.write("started " + str(subject) + "@" + time.strftime("%H:%M:%S") + "\n")
-			file.write(i[0] + " " +i[1]) # re-writes the subjects
-		file.close()
-
-def listing():
-	filename = "save.txt"
-	base = os.path.expanduser('~')
-	file_path = base + "/" + filename
-	print file_path
-	if not os.path.exists(file_path):
-		os.chdir(base)
-		print "Saving file did not exist... Created one. You can now start logging those hours!"
-		file = open(filename, 'w')
-		file.close()
-	else:
-		os.chdir(base)
-		file = open(filename, 'r')
 		lines = file.readlines()
-		listing = [[x.strip().split(" ")] for x in lines]
-		print tabulate.tabulate(listing)
+		lines = [x.strip().split(" ") for x in lines]
+		for i in lines:
+			dic[i[0]] = i[1]
+	return dic 
+
+def dic_to_file(dic):
+	file = open("save.txt", "w")
+	file.truncate()
+	for i in dic:
+		file.write(i + " " + dic[i])
+	file.close()
+
+def start(subject, dic):
+	dic["started"] = subject + "@" + time.strftime("%H:%M:%M")
+	return dic
+
+
+def listing(dic):
+	if len(dic) == 0:
+		print "You haven't log any hours yet!!"
+	else:
+		table = []
+		for i in dic:
+			table.append([i, dic[i]])
+		print tabulate.tabulate(table, headers=["Subject", "Hours"])
 	
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
+	dic = file_to_dic()
 	group = optparse.OptionParser(description='Process some integers.')
 	group.add_option('-s', '--start', action="store", nargs=1, help='Start the logger')
 	group.add_option('-p', '--stop', action="store", nargs=1, help='Stop the logger')
@@ -76,9 +69,9 @@ if __name__ == '__main__':
 	elif options.list and len(args) > 0:
 		print "Invalida number of arguments. With --list no argument is permited."
 	elif options.list:
-		listing()
+		listing(dic)
 	elif options.start != None:
 		string = options.start
-		start(string)
+		dic = start(options.start, dic)
 
 
