@@ -21,16 +21,19 @@ def file_to_dic():
 		lines = [x.strip().split(" ") for x in lines]
 		for i in lines:
 			dic[i[0]] = i[1]
+		print dic
 	return dic 
 
 def dic_to_file(dic):
 	file = open("save.txt", "w")
 	file.truncate()
 	for i in dic:
-		file.write(i + " " + dic[i])
+		file.write(i + " " + dic[i] + "\n")
 	file.close()
 
 def start(subject, dic):
+	if subject not in dic:
+		dic[subject] = datetime.time(0,0,0).strftime("%H:%M:%S")
 	dic["started"] = subject + "@" + time.strftime("%H:%M:%M")
 	return dic
 
@@ -41,9 +44,52 @@ def listing(dic):
 	else:
 		table = []
 		for i in dic:
-			table.append([i, dic[i]])
+			if i != "started":
+				table.append((i, dic[i]))
+			if "started" in dic:
+				table.append(("started", dic["started"]))
+		table = sorted(table, lambda p: p[1], reverse=True)
 		print tabulate.tabulate(table, headers=["Subject", "Hours"])
 	
+
+def stop(subject, dic):
+	if "started" not in dic:
+		print "You can't stop what you din't start!"
+		return dic
+	else:
+		sub = dic["started"].split("@")
+		if subject != sub[0]:
+			print "You din't start that subject! You started ", sub[0]
+			return dic
+		else:
+			print dic
+			sub_time = dic[subject].split(":")
+			sub_time = [int(x) for x in sub_time]
+			now = time.strftime("%H:%M:%S").split(":")
+			begin = sub[1].split(":")
+			hours = int(now[0]) - int(begin[0])
+			minutes = int(now[1]) - int(begin[1])
+			seconds = int(now[2]) - int(begin[2])
+			if seconds >= 60:
+				minutes += 1
+				seconds = seconds - 60
+			elif minutes >= 60:
+				hours +- 1
+				minutes = minutes - 60
+			sub_time = [sub_time[0] + hours, sub_time[1] + minutes, sub_time[2] + seconds]
+			sub_time = str(sub_time[0]).zfill(2) +":"+ str(sub_time[1]).zfill(2) + ":" + str(sub_time[2]).zfill(2)
+			dic[subject] = sub_time
+			del dic["started"]
+			return dic
+
+
+def remove(subject, dic):
+	if subject not in dic:
+		print "Unable to remove " + subject + ", "+ subeject + " does not exist!"
+	else:
+		print "Removed " + subject + "..."
+		del dic[subject]
+		return dic
 
 
 if __name__ == '__main__':
@@ -61,8 +107,6 @@ if __name__ == '__main__':
 	elif options.list and options.start or options.list and options.stop or options.list and options.remove:
 		group.error("Option -l is used aloneoptions	print args")
 
-	print (options, args) #this tuple has a object options, and a list arguments.
-
 	if len(args) > 1: #We only want one subject to be running at the time, so we limit the number of arguments the program can take
 		print "Invalid number of arguments. Only one is allowed"
 		sys.exit()
@@ -73,5 +117,10 @@ if __name__ == '__main__':
 	elif options.start != None:
 		string = options.start
 		dic = start(options.start, dic)
+		dic_to_file(dic)
+	elif options.stop != None:
+		dic = stop(options.stop, dic)
+		dic_to_file(dic)
+
 
 
