@@ -50,12 +50,11 @@ def listing(dic):
 				table.append((i, dic[i]))
 			if "started" in dic:
 				table.append(("started", dic["started"]))
-		table = sorted(table, lambda p: p[1], reverse=True)
 		print tabulate.tabulate(table, headers=["Subject", "Hours"])
 	
 
 def stop(subject, dic):
-	if "started" not in dic:
+	if "started" not in dic:	
 		print "You can't stop what you din't start!"
 		return dic
 	else:
@@ -63,24 +62,15 @@ def stop(subject, dic):
 		if subject != sub[0]:
 			print "You din't start that subject! You started ", sub[0]
 			return dic
-		else:
-			print dic
+		else:	
 			sub_time = dic[subject].split(":")
 			sub_time = [int(x) for x in sub_time]
 			now = time.strftime("%H:%M:%S").split(":")
 			begin = sub[1].split(":")
 			hours = int(now[0]) - int(begin[0])
 			minutes = int(now[1]) - int(begin[1])
-			seconds = int(now[2]) - int(begin[2])
-			if seconds >= 60:
-				print "yolo"
-				minutes += 1
-				seconds = seconds - 60
-			elif minutes >= 60:
-				hours += 1
-				minutes = minutes - 60
-			sub_time = [sub_time[0] + hours, sub_time[1] + minutes, sub_time[2] + seconds]
-			sub_time = str(sub_time[0]).zfill(2) +":"+ str(sub_time[1]).zfill(2) + ":" + str(sub_time[2]).zfill(2)
+			sub_time = [sub_time[0] + hours, sub_time[1] + minutes]
+			sub_time = str(sub_time[0]).zfill(2) +":"+ str(sub_time[1]).zfill(2)
 			dic[subject] = sub_time
 			del dic["started"]
 			return dic
